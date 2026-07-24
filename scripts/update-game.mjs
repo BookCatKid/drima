@@ -2,7 +2,8 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   GAME_ID, NEW_HOST, REQUIRED, VERSIONS_DIR, directoryStats, fetchRetry,
-  formatArchiveLabel, installDirectory, patchIndexHtml, readManifest, writeManifest,
+  formatArchiveLabel, installDirectory, patchIndexHtml, patchSourceMinJs,
+  readManifest, writeManifest,
 } from "./archive-lib.mjs";
 
 const WRAPPER = `https://games.poki.com/458768/${GAME_ID}?site_id=3&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad`;
@@ -28,7 +29,7 @@ async function main() {
       const target = path.join(temp, asset);
       await mkdir(path.dirname(target), { recursive: true });
       const body = Buffer.from(await response.arrayBuffer());
-      await writeFile(target, asset === "index.html" ? patchIndexHtml(body.toString("utf8")) : body);
+      await writeFile(target, asset === "index.html" ? patchIndexHtml(body.toString("utf8")) : asset === "webapp/source_min.js" ? patchSourceMinJs(body.toString("utf8")) : body);
       downloaded.push(asset);
     }
     for (const asset of optional) {

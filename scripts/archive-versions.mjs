@@ -172,7 +172,7 @@ async function downloadVersion(group) {
       }
       const target = path.join(temp, asset);
       await mkdir(path.dirname(target), { recursive: true });
-      await writeFile(target, asset === "index.html" ? patchIndexHtml(body.toString("utf8")) : body);
+      await writeFile(target, asset === "index.html" ? patchIndexHtml(body.toString("utf8")) : asset === "webapp/source_min.js" ? patchSourceMinJs(body.toString("utf8")) : body);
     });
     await installDirectory(temp, finalDirectory);
   } catch (error) {

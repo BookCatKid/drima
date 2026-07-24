@@ -35,6 +35,12 @@ export function patchIndexHtml(html) {
     : patched.replace(/<head([^>]*)>/i, '<head$1>\n<script src="../../poki-sdk.js"></script>');
 }
 
+export function patchSourceMinJs(src) {
+  return src.startsWith("var pokiDebug=false")
+    ? "var pokiDebug=true" + src.slice("var pokiDebug=false".length)
+    : src;
+}
+
 export function formatArchiveLabel(timestamp, latest = false) {
   if (latest) return "Current Poki build";
   const date = new Date(`${timestamp.slice(0, 4)}-${timestamp.slice(4, 6)}-${timestamp.slice(6, 8)}T${timestamp.slice(8, 10)}:${timestamp.slice(10, 12)}:${timestamp.slice(12, 14)}Z`);

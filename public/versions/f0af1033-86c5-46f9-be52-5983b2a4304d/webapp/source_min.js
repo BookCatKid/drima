@@ -1,4 +1,4 @@
-var pokiDebug=false;var Audio={};Audio.ctx=null;Audio.timer=null;Audio.allowed=false;Audio.paused=false;Audio.postInit=[];Audio.init=function(samples,sampleRate){Audio.samples=samples;Audio.sampleRate=sampleRate;Audio.bufferingDelay=50/1000;Audio.bufferDurationSecs=Audio.samples/Audio.sampleRate;Audio.nextPlayTime=0;Audio.numSimultaneouslyQueuedBuffers=5;Audio.paused=false;Audio.resume();}
+var pokiDebug=true;var Audio={};Audio.ctx=null;Audio.timer=null;Audio.allowed=false;Audio.paused=false;Audio.postInit=[];Audio.init=function(samples,sampleRate){Audio.samples=samples;Audio.sampleRate=sampleRate;Audio.bufferingDelay=50/1000;Audio.bufferDurationSecs=Audio.samples/Audio.sampleRate;Audio.nextPlayTime=0;Audio.numSimultaneouslyQueuedBuffers=5;Audio.paused=false;Audio.resume();}
 Audio.deinit=function(){Audio.allowed=false;}
 Audio.allow=function(){Audio.allowed=true;for(let i=0;i<Audio.postInit.length;i++){Audio.postInit[i]();}
 Audio.postInit=[];document.removeEventListener('keydown',Audio.initCtx);document.removeEventListener('mousedown',Audio.initCtx);document.removeEventListener('touchend',Audio.initCtx);}
