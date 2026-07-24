@@ -1,0 +1,6 @@
+*.wasm binary
+*.data binary
+*.jpg binary
+*.woff binary
+public/versions/manifest.json linguist-generated=true
+public/versions/** -whitespace

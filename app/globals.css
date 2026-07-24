@@ -1,0 +1,42 @@
+:root {
+  color-scheme: dark;
+  background: #0b0b0b;
+  color: #e8e8e8;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; min-height: 100%; background: #0b0b0b; }
+button, select { font: inherit; }
+
+main { width: min(1200px, calc(100% - 24px)); margin: 0 auto; padding: 16px 0 20px; }
+
+header { height: 34px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+h1 { margin: 0; font-size: 18px; font-weight: 600; }
+header span, .note { color: #777; font-size: 12px; }
+
+.controls { display: grid; grid-template-columns: auto minmax(240px, 1fr) auto; gap: 8px; align-items: center; }
+.controls label { color: #999; font-size: 13px; }
+select, button { height: 36px; color: #e8e8e8; background: #171717; border: 1px solid #333; border-radius: 4px; }
+select { width: 100%; padding: 0 10px; }
+button { padding: 0 14px; cursor: pointer; }
+button:hover { background: #222; }
+button:disabled, select:disabled { opacity: .5; cursor: default; }
+
+.details { min-height: 36px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; color: #999; font-size: 12px; padding: 8px 0; }
+.details code { margin-left: auto; color: #666; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+.error { color: #ff7777; font-size: 13px; }
+
+.game { height: calc(100vh - 152px); min-height: 480px; display: grid; place-items: center; overflow: hidden; background: #002b50; border: 1px solid #333; }
+iframe { width: 100%; height: 100%; display: block; border: 0; background: #002b50; }
+.note { margin: 9px 0 0; }
+
+@media (max-width: 700px) {
+  main { width: calc(100% - 12px); padding-top: 8px; }
+  .controls { grid-template-columns: 1fr auto; }
+  .controls label { display: none; }
+  .details { min-height: 56px; }
+  .details code { width: 100%; margin-left: 0; overflow: hidden; text-overflow: ellipsis; }
+  .game { height: calc(100vh - 166px); min-height: 440px; }
+}
