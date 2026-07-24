@@ -3,14 +3,14 @@ import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
 import {
-  NEW_HOST, OLD_HOST, REQUIRED, VERSIONS_DIR, directoryStats,
+  GAME_ID, NEW_HOST, OLD_HOST, REQUIRED, VERSIONS_DIR, directoryStats,
   formatArchiveLabel, installDirectory, normalizeAssetPath, patchIndexHtml,
   readManifest, writeManifest,
 } from "./archive-lib.mjs";
 
 const CDX = "https://web.archive.org/cdx/search/cdx";
 const ARQUIVO_CDX = "https://arquivo.pt/wayback/cdx";
-const WRAPPER_URL = "https://games.poki.com/458768/f9564e4e-ef25-4e4b-ba67-cb11a1576bbd";
+const WRAPPER_URL = `https://games.poki.com/458768/${GAME_ID}`;
 const execFileAsync = promisify(execFile);
 
 async function queryHost(host) {
@@ -82,6 +82,63 @@ async function queryArquivoCandidates() {
     } catch { /* Keep checking the other wrapper captures. */ }
   }
   return groups;
+}
+
+/**
+ * Discover version UUIDs from the game's wrapper page captures on the Wayback Machine.
+ * Each wrapper capture embeds the "gameVersion" UUID that was current at that point in time.
+ * This can reveal builds whose CDN assets were never directly archived.
+ */
+async function discoverUuidsFromWrapperPages(existingIds) {
+  const seen = new Set(existingIds);
+  const discovered = [];
+
+  // Query Wayback CDX for all wrapper page captures
+  const params = new URLSearchParams({
+    url: WRAPPER_URL,
+    output: "json",
+    fl: "timestamp,statuscode",
+    filter: "statuscode:200",
+  });
+  params.delete("filter");
+  params.append("filter", "statuscode:200");
+  const wrapperCdxUrl = `${CDX}?${params}`;
+
+  let rows;
+  try {
+    const { stdout } = await execFileAsync("curl", ["--retry", "8", "--retry-all-errors", "--connect-timeout", "20", "-fsSL", wrapperCdxUrl], { maxBuffer: 10 * 1024 * 1024 });
+    rows = JSON.parse(stdout);
+  } catch {
+    console.warn("  Wayback CDX for wrapper page unavailable, skipping");
+    return [];
+  }
+
+  const [, ...values] = rows;
+  const timestamps = values.map((r) => r[0]).sort();
+  console.log(`  ${timestamps.length} wrapper captures in Wayback CDX, checking for version UUIDs…`);
+
+  await mapLimit(timestamps, 3, async (timestamp) => {
+    try {
+      const replay = `https://web.archive.org/web/${timestamp}id_/${WRAPPER_URL}`;
+      const { stdout: html } = await execFileAsync("curl", ["--compressed", "--retry", "3", "--max-time", "30", "-fsSL", replay], { maxBuffer: 10 * 1024 * 1024 });
+      const uuid = html.match(/"gameVersion":"([0-9a-f-]{36})"/)?.[1];
+      if (!uuid || seen.has(uuid)) return;
+      seen.add(uuid);
+
+      const host = html.match(/https:\/\/([^/]+)\/[0-9a-f-]{36}\/index\.html/)?.[1] ?? null;
+      const normalizedHost = host && (host.includes("poki-gdn.com") || host.includes("gdn.poki.com")) ? host : OLD_HOST;
+      discovered.push({
+        id: uuid,
+        host: normalizedHost,
+        capturedAt: timestamp,
+        archiveSource: "Internet Archive (wrapper)",
+        rows: new Map(REQUIRED.map((asset) => [asset, { timestamp, original: `https://${normalizedHost}/${uuid}/${asset}` }])),
+      });
+      console.log(`  -> Discovered UUID from wrapper: ${uuid} (${normalizedHost}, captured ${timestamp.slice(0, 8)})`);
+    } catch { /* skip captures that fail to replay */ }
+  });
+
+  return discovered;
 }
 
 async function mapLimit(items, limit, worker) {
@@ -165,11 +222,21 @@ async function main() {
   const oldRows = await queryHost(OLD_HOST);
   const newRows = await queryHost(NEW_HOST);
   const arquivoCandidates = await queryArquivoCandidates();
-  const candidates = [...groupVersions(oldRows, OLD_HOST), ...groupVersions(newRows, NEW_HOST), ...arquivoCandidates]
+  const cdnCandidates = [...groupVersions(oldRows, OLD_HOST), ...groupVersions(newRows, NEW_HOST)];
+  const candidates = [...cdnCandidates, ...arquivoCandidates]
     .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
   const uniqueById = new Map();
   for (const candidate of candidates) if (!uniqueById.has(candidate.id)) uniqueById.set(candidate.id, candidate);
-  const unique = [...uniqueById.values()];
+
+  // Discover additional UUIDs from wrapper page captures
+  const existingIds = new Set([...uniqueById.keys()]);
+  const wrapperDiscovered = await discoverUuidsFromWrapperPages(existingIds);
+  for (const group of wrapperDiscovered) {
+    // If we already have CDN rows for this UUID, prefer those (they have real timestamps per asset)
+    if (!uniqueById.has(group.id)) uniqueById.set(group.id, group);
+  }
+
+  const unique = [...uniqueById.values()].sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
   const manifest = await readManifest();
   const latest = manifest.versions.filter((item) => item.latest).map((item) => {
     const archivedCapture = uniqueById.get(item.id);
@@ -180,6 +247,10 @@ async function main() {
   const latestIds = new Set(latest.map((item) => item.id));
   const toArchive = unique.filter((group) => !latestIds.has(group.id));
   const archived = [];
+  if (toArchive.length > 0) {
+    const wrapperCount = toArchive.filter((g) => g.archiveSource.includes("wrapper")).length;
+    console.log(`  ${toArchive.length} candidate build(s) to investigate (${wrapperCount} from wrapper pages)`);
+  }
   await mapLimit(toArchive, 2, async (group, index) => {
     const onDisk = await readExistingVersion(group);
     if (onDisk) {

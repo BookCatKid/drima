@@ -25,6 +25,8 @@ button:hover { background: #222; }
 button:disabled, select:disabled { opacity: .5; cursor: default; }
 
 .details { min-height: 36px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; color: #999; font-size: 12px; padding: 8px 0; }
+.star { background: none; border: none; cursor: pointer; font-size: 16px; color: #ffcc00; padding: 0; height: auto; line-height: 1; }
+.star:hover { background: none; color: #ffdd44; }
 .details code { margin-left: auto; color: #666; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
 .error { color: #ff7777; font-size: 13px; }
 

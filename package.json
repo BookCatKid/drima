@@ -16,6 +16,7 @@
     "update-game": "node scripts/update-game.mjs",
     "archive-versions": "node scripts/archive-versions.mjs",
     "verify-archive": "node scripts/verify-archive.mjs",
+    "request-archive": "node scripts/request-archive.mjs",
     "sync": "pnpm update-game && pnpm archive-versions"
   },
   "dependencies": {

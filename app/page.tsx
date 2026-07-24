@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type GameVersion = {
   id: string;
@@ -19,12 +19,16 @@ type VersionManifest = {
   versions: GameVersion[];
 };
 
+const FAVORITES_KEY = "drive-mad-favorites";
+const SELECTED_KEY = "drive-mad-version";
+
 const dateLabel = (value: string) => value.slice(0, 10);
 
 export default function Home() {
   const [manifest, setManifest] = useState<VersionManifest | null>(null);
   const [selectedId, setSelectedId] = useState("");
   const [error, setError] = useState("");
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const frameRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -35,26 +39,45 @@ export default function Home() {
       })
       .then((data) => {
         setManifest(data);
-        const saved = window.localStorage.getItem("drive-mad-version");
+        const saved = window.localStorage.getItem(SELECTED_KEY);
         setSelectedId(data.versions.some((version) => version.id === saved) && saved ? saved : data.versions[0]?.id ?? "");
+        const raw = window.localStorage.getItem(FAVORITES_KEY);
+        if (raw) {
+          setFavorites(new Set(JSON.parse(raw)));
+        }
       })
       .catch((reason: Error) => setError(reason.message));
   }, []);
 
   useEffect(() => {
-    if (selectedId) window.localStorage.setItem("drive-mad-version", selectedId);
+    if (selectedId) window.localStorage.setItem(SELECTED_KEY, selectedId);
   }, [selectedId]);
+
+  const toggleFavorite = useCallback((id: string) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      window.localStorage.setItem(FAVORITES_KEY, JSON.stringify([...next]));
+      return next;
+    });
+  }, []);
 
   const selected = useMemo(
     () => manifest?.versions.find((version) => version.id === selectedId),
     [manifest, selectedId],
   );
 
+  const favoriteCount = useMemo(
+    () => manifest?.versions.filter((v) => favorites.has(v.id)).length ?? 0,
+    [manifest, favorites],
+  );
+
   return (
     <main>
       <header>
         <h1>Drive Mad archive</h1>
-        <span>{manifest ? `${manifest.versions.length} builds` : "loading"}</span>
+        <span>{manifest ? `${manifest.versions.length} builds` : "loading"}{favoriteCount > 0 ? ` · ${favoriteCount} starred` : ""}</span>
       </header>
 
       <div className="controls">
@@ -63,7 +86,7 @@ export default function Home() {
           {!manifest && <option>Loading…</option>}
           {manifest?.versions.map((version) => (
             <option key={version.id} value={version.id}>
-              #{String(version.archiveNumber).padStart(2, "0")} · {dateLabel(version.capturedAt)}{version.latest ? " · current" : ""}
+              {favorites.has(version.id) ? "★ " : "  "}#{String(version.archiveNumber).padStart(2, "0")} · {dateLabel(version.capturedAt)}{version.latest ? " · current" : ""}
             </option>
           ))}
         </select>
@@ -76,6 +99,9 @@ export default function Home() {
           <span>{selected.runtimeVersion ? `Fancade ${selected.runtimeVersion}` : "Runtime version not embedded"}</span>
           <span>{selected.sameWasmAs.length ? `Same WASM as #${selected.sameWasmAs.join(", #")}` : "Unique WASM"}</span>
           {selected.sameDataAs.length > 0 && <span>Same game data as #{selected.sameDataAs.join(", #")}</span>}
+          <button className="star" type="button" onClick={() => toggleFavorite(selected.id)} title={favorites.has(selected.id) ? "Remove from favorites" : "Add to favorites"}>
+            {favorites.has(selected.id) ? "★" : "☆"}
+          </button>
           <code title="Poki build UUID">{selected.id}</code>
         </div>
       )}

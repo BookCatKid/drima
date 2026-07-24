@@ -8,86 +8,96 @@ duplicate detection.
 The archived game remains the property of Martin Magni / Fancade and their
 licensors. Do not redistribute it without permission.
 
-## Run locally
-
-Requires Node.js 22.13+ and pnpm.
+## Getting started
 
 ```bash
 pnpm install
-pnpm dev
+pnpm dev              # local dev server (requires Node.js 22.13+, pnpm)
 ```
 
 Open <http://localhost:3000>. Once installed, playing does not require internet
 access.
 
-## Update and verify
+## Updating the archive
 
 ```bash
-pnpm update-game       # resolve and download Poki's current build
-pnpm archive-versions  # resume discovery from Wayback and Arquivo.pt
-pnpm sync              # run both update steps
-pnpm verify-archive    # verify files, SDK paths, and WASM headers
+pnpm update-game       # fetch Poki's current live build
+pnpm archive-versions  # discover new builds from Wayback Machine & Arquivo.pt
+pnpm request-archive   # ask Wayback to capture current live game URLs
+pnpm sync              # run update-game + archive-versions
+pnpm verify-archive    # check all files, SDK paths, and WASM headers
 ```
 
-`public/versions/manifest.json` is generated automatically. Each entry has:
+The sync workflow (`.github/workflows/sync.yml`) runs these steps automatically
+every 6 hours and commits any new builds found.
 
-- a stable local archive number (`archiveNumber`);
-- Poki's actual release UUID (`id`);
-- the earliest public archive date found (`capturedAt`);
-- an embedded Fancade runtime version when the binary exposes one;
-- SHA-256 hashes for the WASM, data pack, and combined runtime;
-- links to any build with identical WASM, data, or combined runtime.
+`public/versions/manifest.json` is generated automatically. Each entry includes:
+archive number, Poki release UUID, earliest archive capture date, Fancade
+runtime version (if embedded), SHA-256 hashes (WASM, data, combined runtime),
+and cross-links to builds sharing identical assets.
 
-Archive dates are evidence of when a build was live, not official release dates.
-Newer binaries no longer expose a readable Fancade semantic version, so the
-Poki UUID remains their only authoritative upstream build identifier.
+Archive dates indicate when a build was *observed online*, not when it was
+released. Newer binaries no longer embed a Fancade version string, so the Poki
+UUID is the authoritative upstream identifier.
 
 ## Archive coverage
 
-The downloader searches both Poki CDN hostnames through:
+The downloader queries both Poki CDN hostnames through:
 
-- Internet Archive / Wayback CDX;
-- Arquivo.pt CDN and wrapper captures.
+- [Internet Archive / Wayback CDX](https://web.archive.org/);
+- [Arquivo.pt](https://arquivo.pt/) CDN and wrapper captures.
 
-Arquivo.pt added three complete builds missed by Wayback. Common Crawl was also
-checked but did not index usable game-CDN assets. Archive.today had no matching
-wrapper capture, and the former Memento Time Travel aggregator was retired in
-2025.
+Arquivo.pt contributed three complete builds that Wayback missed. Common Crawl
+was checked but did not index usable game-CDN assets.
 
-## GitHub Pages
+## Extending the archive
 
-The repository includes a static Vite build and a Pages deployment workflow.
+### Periodic automation
+
+A scheduled GitHub Actions workflow (`.github/workflows/sync.yml`) runs
+`pnpm sync` every 6 hours, automatically committing any newly discovered
+builds. It also requests the Wayback Machine's Save Page Now API to capture
+the live game URLs, ensuring future runs have fresh archives to query.
+
+To enable the workflow in your fork:
+
+1. Go to **Actions** → **Sync archive** → **Enable**
+2. The workflow runs automatically on the `*/6 * * *` schedule
+
+You can also trigger it manually from the Actions tab.
+
+### Fancade version gaps
+
+Compare the embedded Fancade runtime versions across builds:
+
+| Version | Date range |
+|---------|-----------|
+| 1.10.2  | Aug–Sep 2022 |
+| 1.11.7  | Nov–Dec 2022 |
+| 1.12.1  | Feb 2023 |
+| 1.13.0  | May 2023 |
+| 1.13.5  | Sep–Oct 2023 |
+| 1.14.5  | Feb–Nov 2024 |
+| *(not embedded)* | 2025 onward |
+
+Gaps in the version sequence (e.g., 1.10.x → 1.11.0–1.11.6, 1.13.0 → 1.13.1–1.13.4,
+1.14.5 → next) indicate likely missing builds. Focus CDX date-range queries on
+those periods.
+
+## Deployment
+
+This project can be deployed as a static site on any hosting platform (GitHub
+Pages, Cloudflare Pages, Netlify, etc.). A GitHub Actions workflow
+(`.github/workflows/pages.yml`) handles verification and deployment.
 
 ```bash
-pnpm build:pages
+pnpm build:pages       # build static site into gh-pages/
 ```
 
-The result is written to `gh-pages/`. It uses relative URLs, so it works at both
-`username.github.io` and `username.github.io/repository-name`.
+## Archive structure
 
-To publish:
-
-1. Create an empty GitHub repository.
-2. Add it as `origin` and push `main`.
-3. In the repository's **Settings → Pages**, select **GitHub Actions** as the
-   source if GitHub does not select it automatically.
-
-Every push to `main` then verifies all builds and deploys the static site using
-`.github/workflows/pages.yml`.
-
-## Hosting notes
-
-GitHub Pages is adequate for this archive: the generated site is under the
-Pages artifact limit and every individual file is below GitHub's 100 MB file
-limit. Cloudflare Pages or another static host is also suitable. A conventional
-server is unnecessary because the launcher has no backend.
-
-## Hosting structure
-
-Poki's wrapper resolves to a release-specific CDN directory:
-
-```text
-<game UUID>.gdn.poki.com/<release UUID>/
+```
+public/versions/<release UUID>/
 ├── index.html
 └── webapp/
     ├── fancade.css
@@ -97,10 +107,10 @@ Poki's wrapper resolves to a release-specific CDN directory:
     └── index.wasm
 ```
 
-Local copies replace Poki's online SDK with `public/poki-sdk.js`. The HTML uses
-a relative SDK path so builds work locally and from a GitHub project page.
+Local copies replace Poki's online SDK with `public/poki-sdk.js`. The HTML
+uses a relative SDK path so builds work both locally and from a hosted page.
 
 Sources: [Poki](https://poki.com/en/g/drive-mad),
 [Fancade wiki](https://www.fancade.com/wiki/Drive_Mad),
-[Arquivo.pt](https://arquivo.pt/), and
+[Arquivo.pt](https://arquivo.pt/),
 [Common Crawl](https://index.commoncrawl.org/).
