@@ -30,6 +30,89 @@ export default function Home() {
   const [error, setError] = useState("");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const importRef = useRef<HTMLInputElement>(null);
+  const SAVE_PREFIX = "com.martinmagni.drivemad";
+
+  const exportSaves = useCallback(() => {
+    const data: Record<string, string> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(SAVE_PREFIX)) {
+        data[key] = localStorage.getItem(key)!;
+      }
+    }
+    if (Object.keys(data).length === 0) {
+      alert("No saves found.");
+      return;
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `drive-mad-saves-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const importSaves = useCallback(() => {
+    importRef.current?.click();
+  }, []);
+
+  const handleImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string) as Record<string, string>;
+        let count = 0;
+        for (const [key, value] of Object.entries(data)) {
+          if (!key.startsWith(SAVE_PREFIX) || typeof value !== "string") continue;
+          localStorage.setItem(key, value);
+          count++;
+        }
+        if (count === 0) {
+          alert("No valid save entries found in this file.");
+          return;
+        }
+        alert(`Imported ${count} save entries. Reloading game…`);
+
+        // Disable save-on-exit so the import isn't overwritten
+        const iframe = frameRef.current;
+        const gameStorage = iframe?.contentWindow as any;
+        if (gameStorage?.Storage) {
+          gameStorage.Storage.put = () => {};
+          gameStorage.Storage.write = () => {};
+        }
+        iframe?.contentWindow?.location.reload();
+      } catch {
+        alert("Invalid save file.");
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = "";
+  }, []);
+
+  const resetSaves = useCallback(() => {
+    if (!confirm("Delete all Drive Mad saves? This cannot be undone.")) return;
+
+    // Disable the game's save functions so beforeunload can't restore data
+    const iframe = frameRef.current;
+    const gameStorage = iframe?.contentWindow as any;
+    if (gameStorage?.Storage) {
+      gameStorage.Storage.put = () => {};
+      gameStorage.Storage.write = () => {};
+    }
+
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(SAVE_PREFIX)) keys.push(key);
+    }
+    keys.forEach((key) => localStorage.removeItem(key));
+    alert(`Deleted ${keys.length} save entries. Reloading game…`);
+    iframe?.contentWindow?.location.reload();
+  }, []);
 
   useEffect(() => {
     fetch("./versions/manifest.json", { cache: "no-store" })
@@ -91,6 +174,14 @@ export default function Home() {
           ))}
         </select>
         <button type="button" onClick={() => frameRef.current?.requestFullscreen()} disabled={!selectedId}>Fullscreen</button>
+      </div>
+
+      <div className="saves">
+        <span>Saves</span>
+        <button type="button" onClick={exportSaves}>Export</button>
+        <button type="button" onClick={importSaves}>Import</button>
+        <button type="button" onClick={resetSaves}>Reset</button>
+        <input ref={importRef} type="file" accept=".json" onChange={handleImport} hidden />
       </div>
 
       {error ? <p className="error">Could not load versions: {error}</p> : selected && (
