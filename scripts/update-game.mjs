@@ -14,6 +14,14 @@ async function main() {
   const versionId = wrapper.match(/"gameVersion":"([0-9a-f-]{36})"/)?.[1];
   if (!gameUri || !versionId) throw new Error("Poki wrapper no longer exposes gameUri/gameVersion in the expected format.");
 
+  // Check if this version is already the latest in the manifest
+  const manifest = await readManifest();
+  const currentLatest = manifest.versions.find((item) => item.latest);
+  if (currentLatest && currentLatest.id === versionId) {
+    console.log(`Drive Mad is already up-to-date (${versionId}).`);
+    return;
+  }
+
   const baseUrl = new URL("./", gameUri).href;
   const temp = path.join(VERSIONS_DIR, `.tmp-${versionId}`);
   const finalDirectory = path.join(VERSIONS_DIR, versionId);
@@ -47,7 +55,6 @@ async function main() {
     throw error;
   }
 
-  const manifest = await readManifest();
   const stats = await directoryStats(finalDirectory);
   const capturedAt = new Date().toISOString();
   const version = {

@@ -49,7 +49,7 @@ export function formatArchiveLabel(timestamp, latest = false) {
 
 export async function readManifest() {
   try { return JSON.parse(await readFile(MANIFEST_PATH, "utf8")); }
-  catch { return { generatedAt: new Date().toISOString(), versions: [] }; }
+  catch { return { updatedAt: new Date().toISOString(), versions: [] }; }
 }
 
 export async function writeManifest(versions) {
@@ -81,7 +81,14 @@ export async function writeManifest(versions) {
     version.sameRuntimeAs = enriched.filter((other) => other.id !== version.id && other.runtimeSha256 === version.runtimeSha256).map((other) => other.archiveNumber);
   }
   const sorted = enriched.sort((a, b) => b.capturedAt.localeCompare(a.capturedAt));
-  await writeFile(MANIFEST_PATH, `${JSON.stringify({ generatedAt: new Date().toISOString(), versions: sorted }, null, 2)}\n`);
+  const newContent = `${JSON.stringify({ updatedAt: new Date().toISOString(), versions: sorted }, null, 2)}\n`;
+  try {
+    const existing = await readFile(MANIFEST_PATH, "utf8");
+    const existingParsed = JSON.parse(existing);
+    const newParsed = JSON.parse(newContent);
+    if (JSON.stringify(existingParsed.versions) === JSON.stringify(newParsed.versions)) return;
+  } catch { /* file doesn't exist yet, write it */ }
+  await writeFile(MANIFEST_PATH, newContent);
 }
 
 export async function directoryStats(directory) {
