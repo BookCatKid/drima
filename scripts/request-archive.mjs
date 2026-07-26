@@ -16,7 +16,7 @@ import { GAME_ID, NEW_HOST } from "./archive-lib.mjs";
 const execFileAsync = promisify(execFile);
 
 const SPN_URL = "https://web.archive.org/save";
-const USER_AGENT = "Mozilla/5.0 (compatible; Drive-Mad-Offline-Archiver; +https://github.com/simon/drive-mad-archive)";
+const USER_AGENT = "Mozilla/5.0 (compatible; Drive-Mad-Offline-Archiver; +https://github.com/BookCatKid/drima)";
 
 const TARGETS = [
   // The Poki game wrapper page (embeds the live gameVersion UUID)

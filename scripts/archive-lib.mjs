@@ -108,6 +108,15 @@ export async function directoryStats(directory) {
 
 export async function installDirectory(tempDirectory, finalDirectory) {
   await rm(finalDirectory, { recursive: true, force: true });
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try { await rename(tempDirectory, finalDirectory); return; }
+    catch (error) {
+      if (error.code !== "EACCES" && error.code !== "EPERM") {
+        await rm(finalDirectory, { recursive: true, force: true });
+      }
+      await new Promise((r) => setTimeout(r, 100 + attempt * 50));
+    }
+  }
   await rename(tempDirectory, finalDirectory);
 }
 

@@ -159,6 +159,8 @@ async function downloadVersion(group) {
   await mkdir(temp, { recursive: true });
   try {
     const assets = [...group.rows.entries()];
+    const dirs = new Set(assets.map(([asset]) => path.dirname(path.join(temp, asset))));
+    await Promise.all([...dirs].map((dir) => mkdir(dir, { recursive: true })));
     await mapLimit(assets, 2, async ([asset, row]) => {
       const replay = group.archiveSource === "Arquivo.pt"
         ? `https://arquivo.pt/wayback/${row.timestamp}id_/${row.original}`
@@ -176,9 +178,7 @@ async function downloadVersion(group) {
           return;
         }
       }
-      const target = path.join(temp, asset);
-      await mkdir(path.dirname(target), { recursive: true });
-      await writeFile(target, asset === "index.html" ? patchIndexHtml(body.toString("utf8")) : asset === "webapp/source_min.js" ? patchSourceMinJs(body.toString("utf8")) : body);
+      await writeFile(path.join(temp, asset), asset === "index.html" ? patchIndexHtml(body.toString("utf8")) : asset === "webapp/source_min.js" ? patchSourceMinJs(body.toString("utf8")) : body);
     });
     await installDirectory(temp, finalDirectory);
   } catch (error) {
