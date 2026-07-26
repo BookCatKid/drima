@@ -5,7 +5,7 @@ import { promisify } from "node:util";
 import {
   GAME_ID, NEW_HOST, OLD_HOST, REQUIRED, VERSIONS_DIR, directoryStats,
   formatArchiveLabel, installDirectory, normalizeAssetPath, patchIndexHtml,
-  readManifest, writeManifest,
+  patchSourceMinJs, readManifest, writeManifest,
 } from "./archive-lib.mjs";
 
 const CDX = "https://web.archive.org/cdx/search/cdx";
@@ -158,7 +158,7 @@ async function downloadVersion(group) {
   await rm(temp, { recursive: true, force: true });
   await mkdir(temp, { recursive: true });
   try {
-    const assets = REQUIRED.map((asset) => [asset, group.rows.get(asset)]);
+    const assets = [...group.rows.entries()];
     await mapLimit(assets, 2, async ([asset, row]) => {
       const replay = group.archiveSource === "Arquivo.pt"
         ? `https://arquivo.pt/wayback/${row.timestamp}id_/${row.original}`
@@ -168,7 +168,13 @@ async function downloadVersion(group) {
       try {
         ({ stdout: body } = await execFileAsync("curl", ["--compressed", "--retry", "2", "--retry-all-errors", "--connect-timeout", "15", "--max-time", "60", "-fsSL", "-H", "Referer: https://games.poki.com/", live], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 }));
       } catch {
-        ({ stdout: body } = await execFileAsync("curl", ["--compressed", "--retry", "4", "--retry-all-errors", "--retry-max-time", "120", "--connect-timeout", "20", "--max-time", "120", "-fsSL", replay], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 }));
+        try {
+          ({ stdout: body } = await execFileAsync("curl", ["--compressed", "--retry", "4", "--retry-all-errors", "--retry-max-time", "120", "--connect-timeout", "20", "--max-time", "120", "-fsSL", replay], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 }));
+        } catch (replayError) {
+          if (REQUIRED.includes(asset)) throw replayError;
+          console.warn(`  [${group.id}] ${asset} unavailable, skipping`);
+          return;
+        }
       }
       const target = path.join(temp, asset);
       await mkdir(path.dirname(target), { recursive: true });
@@ -210,8 +216,46 @@ async function readExistingVersion(group) {
     const patchedHtml = patchIndexHtml(html);
     if (patchedHtml !== html) await writeFile(htmlPath, patchedHtml);
     if (!patchedHtml.includes("../../poki-sdk.js")) return null;
+
+    // Patch source_min.js if needed (mirrors what downloadVersion does)
+    const sourceMinPath = path.join(finalDirectory, "webapp", "source_min.js");
+    try {
+      const sourceMin = await readFile(sourceMinPath, "utf8");
+      const patchedSourceMin = patchSourceMinJs(sourceMin);
+      if (patchedSourceMin !== sourceMin) await writeFile(sourceMinPath, patchedSourceMin);
+    } catch { /* some versions may not have source_min.js */ }
+
     const wasm = await readFile(path.join(finalDirectory, "webapp/index.wasm"));
     if (!wasm.subarray(0, 4).equals(Buffer.from([0, 97, 115, 109]))) return null;
+
+    // Download any extra assets from CDX that aren't yet on disk
+    const extras = [...group.rows.entries()].filter(([asset]) => !REQUIRED.includes(asset));
+    const missing = [];
+    for (const [asset] of extras) {
+      try { await access(path.join(finalDirectory, asset)); }
+      catch { missing.push(asset); }
+    }
+    if (missing.length > 0) {
+      await mapLimit(missing, 2, async (asset) => {
+        const row = group.rows.get(asset);
+        const replay = group.archiveSource === "Arquivo.pt"
+          ? `https://arquivo.pt/wayback/${row.timestamp}id_/${row.original}`
+          : `https://web.archive.org/web/${row.timestamp}id_/${row.original}`;
+        const live = `https://${group.host}/${group.id}/${asset}`;
+        let body;
+        try {
+          ({ stdout: body } = await execFileAsync("curl", ["--compressed", "--retry", "2", "--retry-all-errors", "--connect-timeout", "15", "--max-time", "60", "-fsSL", "-H", "Referer: https://games.poki.com/", live], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 }));
+        } catch {
+          try {
+            ({ stdout: body } = await execFileAsync("curl", ["--compressed", "--retry", "4", "--retry-all-errors", "--retry-max-time", "120", "--connect-timeout", "20", "--max-time", "120", "-fsSL", replay], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024 }));
+          } catch { return; } // skip unavailable extras
+        }
+        const target = path.join(finalDirectory, asset);
+        await mkdir(path.dirname(target), { recursive: true });
+        await writeFile(target, body);
+      });
+    }
+
     return describeVersion(group, await directoryStats(finalDirectory));
   } catch { return null; }
 }
