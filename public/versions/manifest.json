@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-19T18:34:14.276Z",
+  "updatedAt": "2026-08-20T01:15:58.403Z",
   "versions": [
     {
       "id": "68ae072b-bde4-4175-8300-0e3e02c5a10e",
@@ -215,20 +215,20 @@
       "sameRuntimeAs": []
     },
     {
-      "id": "d2d1c9d9-8f98-450b-9eee-0d612f13b315",
-      "label": "Aug 27, 2025 archive",
-      "capturedAt": "2025-08-27T15:03:58Z",
+      "id": "ccc489eb-89f6-46ad-a9ff-1da0e84e0e43",
+      "label": "Oct 15, 2025 archive",
+      "capturedAt": "2025-10-15T16:41:40Z",
       "sourceHost": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-      "sourceUrl": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/d2d1c9d9-8f98-450b-9eee-0d612f13b315/",
+      "sourceUrl": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/ccc489eb-89f6-46ad-a9ff-1da0e84e0e43/",
       "archiveSource": "Internet Archive",
       "fileCount": 8,
-      "bytes": 3928036,
+      "bytes": 3949518,
       "latest": false,
       "archiveNumber": 15,
       "runtimeVersion": null,
-      "wasmSha256": "9645d0fc9d125380bc37ba543fcd02ca75a237cf027c5b69782e5b31238ffe34",
-      "dataSha256": "b504b7892ff2fd1f9cb43b60c9230e62b44c044ff4ae8fb503aa3785007f37bd",
-      "runtimeSha256": "2c8611a346ee0566ce3bf444accab0e35bb1b5778568f970b22645f7616950e1",
+      "wasmSha256": "639d301f5f0e3f1513166452aed72c41a11c774e23707cdc38d7704093781e2b",
+      "dataSha256": "2e7397d6f3cca1cd2a7713e6b90e46d9110af767c89a600d8ccf8b4b71ec0777",
+      "runtimeSha256": "e9cc489b058531ee9a5e90ee691d209c1cc46ee51da9dea013ba3de23107c610",
       "sameWasmAs": [],
       "sameDataAs": [],
       "sameRuntimeAs": []
