@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-21T12:46:33.201Z",
+  "updatedAt": "2026-08-22T01:14:09.082Z",
   "versions": [
     {
       "id": "68ae072b-bde4-4175-8300-0e3e02c5a10e",
@@ -10,7 +10,7 @@
       "fileCount": 8,
       "bytes": 5424456,
       "latest": true,
-      "archiveNumber": 25,
+      "archiveNumber": 24,
       "runtimeVersion": null,
       "wasmSha256": "8beeac4ea8384a77d2931eb9cb02b99d76ea223452304d6ec540f44a308033fc",
       "dataSha256": "43921fe8f7802bb731c02fc9ad32605a8863a4b6009fd65918d88a868b689478",
@@ -30,7 +30,7 @@
       "fileCount": 7,
       "bytes": 5283116,
       "latest": false,
-      "archiveNumber": 24,
+      "archiveNumber": 23,
       "runtimeVersion": null,
       "wasmSha256": "f5f83ffa934e79bf3bc5f5027625ee627261696ba1177e1ffd1ad3a90a86fcb0",
       "dataSha256": "d9f1ae22decea99c4e8ff592b9a1a4a69852e9858d83ad16d5e1b8297a0f0ef1",
@@ -49,7 +49,7 @@
       "fileCount": 7,
       "bytes": 5217581,
       "latest": false,
-      "archiveNumber": 23,
+      "archiveNumber": 22,
       "runtimeVersion": null,
       "wasmSha256": "cfe6643685af756cc7dc38c0abdbc1359ff9bfbcbffbe50ba69cffaca38d0e0f",
       "dataSha256": "adb98f74a63c9d5d0284b1506bbda7554b8dc8fbb198939f9251418acd23b122",
@@ -68,7 +68,7 @@
       "fileCount": 7,
       "bytes": 4644933,
       "latest": false,
-      "archiveNumber": 22,
+      "archiveNumber": 21,
       "runtimeVersion": null,
       "wasmSha256": "1c2cffcb0e074f828fd32fa7f57aa00049b264af98ba57dbfcdd21277c0703bb",
       "dataSha256": "8d195220b9c2986c4e7547ef99ad13e17436af89471491686054152e513a8f09",
@@ -87,14 +87,14 @@
       "fileCount": 7,
       "bytes": 21693835,
       "latest": false,
-      "archiveNumber": 21,
+      "archiveNumber": 20,
       "runtimeVersion": null,
       "wasmSha256": "d73ddfc83909f8e4c6bf93b7fbeca9a8a94a5bce4fa934b2ecaf903b3e3b1f9f",
       "dataSha256": "ad950df30633f0a381d011412cca5a3922bed6b83ff59c94168fed4e8bfae125",
       "runtimeSha256": "cdf816c2028afc2ebf41e025d6eebc8310c90b68d5488d7a585ec9a84f1b8f4e",
       "sameWasmAs": [],
       "sameDataAs": [
-        20
+        19
       ],
       "sameRuntimeAs": []
     },
@@ -108,14 +108,14 @@
       "fileCount": 7,
       "bytes": 21741653,
       "latest": false,
-      "archiveNumber": 20,
+      "archiveNumber": 19,
       "runtimeVersion": null,
       "wasmSha256": "e60a4fcd9078a983b281b3b61bdbd8f9268ee593559c071f3a4bb446d2a9bcae",
       "dataSha256": "ad950df30633f0a381d011412cca5a3922bed6b83ff59c94168fed4e8bfae125",
       "runtimeSha256": "b1cd872577c298c16fa231a3346c86d129822c8bd1728f8264c6a9356dbdf2ca",
       "sameWasmAs": [],
       "sameDataAs": [
-        21
+        20
       ],
       "sameRuntimeAs": []
     },
@@ -129,7 +129,7 @@
       "fileCount": 9,
       "bytes": 29673986,
       "latest": false,
-      "archiveNumber": 19,
+      "archiveNumber": 18,
       "runtimeVersion": null,
       "wasmSha256": "446f4c9b3dbfa6f12f166c7c9b70e741a871470698673b47fb09b136bc380b1d",
       "dataSha256": "5ebf335f43805703551d36134af174e820d28df5b16043885b0dc2a9ce8c1791",
@@ -148,7 +148,7 @@
       "fileCount": 9,
       "bytes": 29450292,
       "latest": false,
-      "archiveNumber": 18,
+      "archiveNumber": 17,
       "runtimeVersion": null,
       "wasmSha256": "04d09cda535ebe2b1289ed2f1ad0535a95cf6730faa89b19f04e8006e6f76dee",
       "dataSha256": "76e614df7395433ad88a235f85667550e510212401a0c3ead66cf6f6327ba2b4",
@@ -167,7 +167,7 @@
       "fileCount": 9,
       "bytes": 4135158,
       "latest": false,
-      "archiveNumber": 17,
+      "archiveNumber": 16,
       "runtimeVersion": null,
       "wasmSha256": "3847d9490f9ecd128b0117d1e2af5aabc110dce6526cf06722b6d11dde8f8656",
       "dataSha256": "35572d5c91e12aaf5b1b108a60256ca8d79bba1d17ef7f01f0c8f83d5cfe8a35",
@@ -186,7 +186,7 @@
       "fileCount": 9,
       "bytes": 4124615,
       "latest": false,
-      "archiveNumber": 16,
+      "archiveNumber": 15,
       "runtimeVersion": null,
       "wasmSha256": "fbab22a620c8fb73935f823bdc1d832eeadd59b36084f387447679a274cd51ee",
       "dataSha256": "3acc5efc0a5c41121cf607b40cfe40f92687e18efc8067ad5ced2d9265a4de35",
@@ -205,7 +205,7 @@
       "fileCount": 8,
       "bytes": 3568923,
       "latest": false,
-      "archiveNumber": 15,
+      "archiveNumber": 14,
       "runtimeVersion": null,
       "wasmSha256": "2da28b171eb0b39c01c54e4073ee92b70bdec0980bc4d6afaf6b125a79c391a1",
       "dataSha256": "d7e07ecbb1ab91ab7c0d22823f96ed7125fe92b75bb9e31fe62cda8775b79681",
@@ -224,14 +224,14 @@
       "fileCount": 8,
       "bytes": 3593447,
       "latest": false,
-      "archiveNumber": 14,
+      "archiveNumber": 13,
       "runtimeVersion": null,
       "wasmSha256": "8e63d43061c3b5dd972c57a5bc87f70a5e26dd8230531c92216394e683b1cfc2",
       "dataSha256": "6f1a5c98642f4a1da3fe3f5c788a31ce12d960138e738b8b2b69f3bcc28353ba",
       "runtimeSha256": "e8c7318f90d2f77958ad8a948abe5055f6ec870c41263ec3201ecaadad3b9e62",
       "sameWasmAs": [],
       "sameDataAs": [
-        13
+        12
       ],
       "sameRuntimeAs": []
     },
@@ -245,14 +245,14 @@
       "fileCount": 8,
       "bytes": 3593619,
       "latest": false,
-      "archiveNumber": 13,
+      "archiveNumber": 12,
       "runtimeVersion": null,
       "wasmSha256": "ee7e71795f05fc0a257288f65412ef6f91c0f986bcf18db7aff14f283e1a4ca5",
       "dataSha256": "6f1a5c98642f4a1da3fe3f5c788a31ce12d960138e738b8b2b69f3bcc28353ba",
       "runtimeSha256": "8f4e6fede755e2648676fa47844e6e4bb48c10b65ae10ac5b917cacc5627abe4",
       "sameWasmAs": [],
       "sameDataAs": [
-        14
+        13
       ],
       "sameRuntimeAs": []
     },
@@ -266,7 +266,7 @@
       "fileCount": 8,
       "bytes": 3581583,
       "latest": false,
-      "archiveNumber": 12,
+      "archiveNumber": 11,
       "runtimeVersion": "1.14.5",
       "wasmSha256": "37b957ef15dac861ca1f6eedd1cc1c36e312b50351fca656778027ef8e1e0a28",
       "dataSha256": "6757b36db2c21159b4f58932419f2a1198be2ba372a3e9dd6254d540f12e71af",
@@ -285,7 +285,7 @@
       "fileCount": 8,
       "bytes": 3184542,
       "latest": false,
-      "archiveNumber": 11,
+      "archiveNumber": 10,
       "runtimeVersion": "1.14.5",
       "wasmSha256": "f65d2de95ae69c5eeabbd1ff0d0249d3cf543e92eee8e74439d246f6c1fb72cb",
       "dataSha256": "943fa451c17ef09b5cee3cc7287c069310112b97650a91760bf397635b01430f",
@@ -304,14 +304,14 @@
       "fileCount": 8,
       "bytes": 2809365,
       "latest": false,
-      "archiveNumber": 10,
+      "archiveNumber": 9,
       "runtimeVersion": "1.13.5",
       "wasmSha256": "11ded57d97d1a46bdccd152e1239c9d1e636f4e3864177f837e34102b4c996d7",
       "dataSha256": "0d293bf1143a270c721cb532f2abca6bebc360d138ff722818444610b3648d7f",
       "runtimeSha256": "713afe8f4658cd30e5488df1cd9b960d83d3de6fe3175fb395908a11b506dc5f",
       "sameWasmAs": [],
       "sameDataAs": [
-        9
+        8
       ],
       "sameRuntimeAs": []
     },
@@ -325,14 +325,14 @@
       "fileCount": 8,
       "bytes": 2809455,
       "latest": false,
-      "archiveNumber": 9,
+      "archiveNumber": 8,
       "runtimeVersion": "1.13.5",
       "wasmSha256": "0ebb442e55e99f70238b4b5738fda247b288353bd34b3189a563cc36b67ba98c",
       "dataSha256": "0d293bf1143a270c721cb532f2abca6bebc360d138ff722818444610b3648d7f",
       "runtimeSha256": "421486a35cbebbcbd6c0894c9f1bf0211deabaf5e2bd0cecf9f61b0e57b1482f",
       "sameWasmAs": [],
       "sameDataAs": [
-        10
+        9
       ],
       "sameRuntimeAs": []
     },
@@ -346,7 +346,7 @@
       "fileCount": 18,
       "bytes": 7567716,
       "latest": false,
-      "archiveNumber": 8,
+      "archiveNumber": 7,
       "runtimeVersion": "1.13.0",
       "wasmSha256": "ef04de92568f92aec722c39d9e16c7ae439e348dea08089db1a44822017cfd85",
       "dataSha256": "d050abe1a115ea52569892f0b4e1040ecc18ca0bbdf6e16d05228ee4ec1827e8",
@@ -357,15 +357,15 @@
     },
     {
       "id": "0f1e5402-e0ae-444e-ac78-e42d155c33e2",
-      "label": "Feb 8, 2023 archive",
-      "capturedAt": "2023-02-08T13:03:18Z",
+      "label": "Feb 18, 2023 archive",
+      "capturedAt": "2023-02-18T04:55:31Z",
       "sourceHost": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
       "sourceUrl": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/0f1e5402-e0ae-444e-ac78-e42d155c33e2/",
-      "archiveSource": "Arquivo.pt",
+      "archiveSource": "Internet Archive",
       "fileCount": 16,
       "bytes": 7550356,
       "latest": false,
-      "archiveNumber": 7,
+      "archiveNumber": 6,
       "runtimeVersion": "1.12.1",
       "wasmSha256": "049df9f615ea2c26ef507c73317110131707bfa5ba3813522bc4b2a4728ab2c3",
       "dataSha256": "0e7c9b8d8c1b8512efbe8ce8566899f6ed6e6c825d2bd75c61d9dd44cb0f39c6",
@@ -384,36 +384,13 @@
       "fileCount": 16,
       "bytes": 7509342,
       "latest": false,
-      "archiveNumber": 6,
+      "archiveNumber": 5,
       "runtimeVersion": "1.11.7",
       "wasmSha256": "7fa53fd5c5e1975019b3648c58424975f4986847878d3dbbc243326305285716",
       "dataSha256": "016875e17657ea06b1e9086da9dea6be6a9c14ae5f2f5019b0129f40b4c787eb",
       "runtimeSha256": "ec9d9d6d189ccaa8a3137408f2deffdb71e391fc53aebe429376ec956baf41d8",
       "sameWasmAs": [],
-      "sameDataAs": [
-        5
-      ],
-      "sameRuntimeAs": []
-    },
-    {
-      "id": "e91b1e05-151b-4969-8b45-eaf0d567b9f1",
-      "label": "Nov 14, 2022 archive",
-      "capturedAt": "2022-11-14T09:36:06Z",
-      "sourceHost": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-      "sourceUrl": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/e91b1e05-151b-4969-8b45-eaf0d567b9f1/",
-      "archiveSource": "Arquivo.pt",
-      "fileCount": 6,
-      "bytes": 2762592,
-      "latest": false,
-      "archiveNumber": 5,
-      "runtimeVersion": "1.11.7",
-      "wasmSha256": "573e37cc01223b53959238d807c9bdcea78e3a073a702520a14221bc048c2b53",
-      "dataSha256": "016875e17657ea06b1e9086da9dea6be6a9c14ae5f2f5019b0129f40b4c787eb",
-      "runtimeSha256": "06ec0674f5f7f36a7805b2135e37f84390d0eac126bb7c4045c3574f4090eb15",
-      "sameWasmAs": [],
-      "sameDataAs": [
-        6
-      ],
+      "sameDataAs": [],
       "sameRuntimeAs": []
     },
     {
