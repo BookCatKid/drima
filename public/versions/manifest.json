@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-30T20:45:25.182Z",
+  "updatedAt": "2026-08-31T04:01:21.400Z",
   "versions": [
     {
       "id": "68ae072b-bde4-4175-8300-0e3e02c5a10e",
@@ -357,11 +357,11 @@
     },
     {
       "id": "0f1e5402-e0ae-444e-ac78-e42d155c33e2",
-      "label": "Feb 8, 2023 archive",
-      "capturedAt": "2023-02-08T13:03:18Z",
+      "label": "Feb 18, 2023 archive",
+      "capturedAt": "2023-02-18T04:55:31Z",
       "sourceHost": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
       "sourceUrl": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/0f1e5402-e0ae-444e-ac78-e42d155c33e2/",
-      "archiveSource": "Arquivo.pt",
+      "archiveSource": "Internet Archive",
       "fileCount": 16,
       "bytes": 7550356,
       "latest": false,
