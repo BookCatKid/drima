@@ -2,6 +2,7 @@ import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
+import { pathToFileURL } from "node:url";
 import {
   GAME_ID, NEW_HOST, OLD_HOST, REQUIRED, VERSIONS_DIR, directoryStats,
   formatArchiveLabel, installDirectory, normalizeAssetPath, patchIndexHtml,
@@ -260,12 +261,65 @@ async function readExistingVersion(group) {
   } catch { return null; }
 }
 
+
+export const INDEX_SOURCES = ["wayback-old", "wayback-new", "arquivo"];
+
+// Which index query a manifest entry depends on for rediscovery. Entries
+// without an archiveSource were downloaded from the live CDN and are treated
+// as depending on the Wayback query for their sourceHost.
+export function sourceDependency(entry) {
+  if (entry.archiveSource === "Arquivo.pt") return "arquivo";
+  return (entry.sourceHost ?? NEW_HOST) === OLD_HOST ? "wayback-old" : "wayback-new";
+}
+
+async function hasRequiredAssets(id) {
+  try {
+    await Promise.all(REQUIRED.map((asset) => access(path.join(VERSIONS_DIR, id, asset))));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Previous manifest entries that this run did not rediscover must survive:
+// neither a partial index outage nor a flaky-but-successful index response
+// may shrink the published archive. The local copy is the archive; the
+// indexes are only for discovery. Only entries still intact on disk are
+// carried forward, each logged with its reason.
+export async function selectCarryForward(previousVersions, keptIds, degradedNames, hasAssets = hasRequiredAssets) {
+  const carried = [];
+  for (const entry of previousVersions) {
+    if (entry.latest || keptIds.has(entry.id)) continue;
+    const reason = degradedNames.has(sourceDependency(entry))
+      ? `index source ${sourceDependency(entry)} unavailable this run`
+      : "absent from this run's index results";
+    if (await hasAssets(entry.id)) {
+      carried.push(entry);
+      keptIds.add(entry.id);
+      console.log(`  Carried forward ${entry.id} (${reason})`);
+    } else {
+      console.warn(`::warning::${entry.id} cannot be carried forward: required files missing on disk`);
+    }
+  }
+  return carried;
+}
+
 async function main() {
   await mkdir(VERSIONS_DIR, { recursive: true });
   console.log("Reading the Internet Archive and Arquivo.pt indexes…");
-  const oldRows = await queryHost(OLD_HOST);
-  const newRows = await queryHost(NEW_HOST);
-  const arquivoCandidates = await queryArquivoCandidates();
+  const degraded = [];
+  const trySource = async (name, fn) => {
+    try {
+      return await fn();
+    } catch (error) {
+      degraded.push({ source: name, error: String(error?.message ?? error) });
+      console.warn(`::warning::Index source ${name} unavailable; continuing with the remaining sources (${String(error?.message ?? error).split("\n")[0]})`);
+      return [];
+    }
+  };
+  const oldRows = await trySource("wayback-old", () => queryHost(OLD_HOST));
+  const newRows = await trySource("wayback-new", () => queryHost(NEW_HOST));
+  const arquivoCandidates = await trySource("arquivo", () => queryArquivoCandidates());
   const cdnCandidates = [...groupVersions(oldRows, OLD_HOST), ...groupVersions(newRows, NEW_HOST)];
   const candidates = [...cdnCandidates, ...arquivoCandidates]
     .sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
@@ -309,8 +363,21 @@ async function main() {
       console.warn(`[${index + 1}/${toArchive.length}] unavailable for now: ${group.id} (${error.code ?? error.message})`);
     }
   });
-  await writeManifest([...latest, ...archived]);
-  console.log(`Archive ready: ${latest.length + archived.length} playable builds.`);
+  const keptIds = new Set([...latest, ...archived].map((version) => version.id));
+  const carriedForward = await selectCarryForward(manifest.versions, keptIds, new Set(degraded.map((item) => item.source)));
+  if (carriedForward.length > 0) {
+    console.log(`  Carried forward ${carriedForward.length} previously archived build(s) not rediscovered this run.`);
+  }
+  await writeManifest([...latest, ...archived, ...carriedForward]);
+  console.log(`Archive ready: ${latest.length + archived.length + carriedForward.length} playable builds.`);
+  if (degraded.length > 0) {
+    console.warn(`::warning::Sync degraded: ${degraded.map((item) => item.source).join(", ")} unavailable this run`);
+    if (degraded.length === INDEX_SOURCES.length) {
+      throw new Error("All archive index sources unavailable; nothing could be synced");
+    }
+  }
 }
 
-main().catch((error) => { console.error(error); process.exitCode = 1; });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => { console.error(error); process.exitCode = 1; });
+}

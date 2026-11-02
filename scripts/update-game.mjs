@@ -99,4 +99,15 @@ async function main() {
   console.log(`Updated Drive Mad to ${versionId} (${downloaded.length} files, ${(stats.bytes / 1024 / 1024).toFixed(1)} MB).`);
 }
 
-main().catch((error) => { console.error(error); process.exitCode = 1; });
+main().catch((error) => {
+  // A live-CDN or wrapper fetch that fails after retries is transient: skip
+  // this run's update instead of failing the whole sync. A wrapper that no
+  // longer exposes gameUri/gameVersion is a structural change and must stay
+  // loud, as must any unexpected error.
+  if (/^Failed to fetch /.test(String(error?.message ?? error))) {
+    console.warn(`::warning::Live game fetch failed after retries; skipping update this run (${String(error.message).split("\n")[0]})`);
+    return;
+  }
+  console.error(error);
+  process.exitCode = 1;
+});
