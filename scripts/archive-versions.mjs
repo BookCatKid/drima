@@ -29,7 +29,7 @@ async function queryHost(host) {
   return values.map((valuesRow) => Object.fromEntries(headers.map((key, index) => [key, valuesRow[index]])));
 }
 
-function groupVersions(rows, host, archiveSource = "Internet Archive") {
+export function groupVersions(rows, host, archiveSource = "Internet Archive") {
   const groups = new Map();
   for (const row of rows) {
     const match = new URL(row.original).pathname.match(/^\/([0-9a-f-]{36})\/(.+)$/i);
@@ -42,6 +42,17 @@ function groupVersions(rows, host, archiveSource = "Internet Archive") {
     group.capturedAt = group.capturedAt < row.timestamp ? group.capturedAt : row.timestamp;
     const existing = group.rows.get(asset);
     if (!existing || row.timestamp < existing.timestamp) group.rows.set(asset, row);
+  }
+  for (const group of groups.values()) {
+    // A capture nested under another asset's name (e.g. the Poki savegame shim at
+    // "index.html/poki-savegame-safarisavegame.html") cannot be written to disk next to
+    // that file: mkdir of its dirname collides with the file (EISDIR). Drop the side of
+    // the collision that isn't required, preferring required assets.
+    for (const asset of [...group.rows.keys()]) {
+      const parent = [...group.rows.keys()].find((other) => other !== asset && asset.startsWith(other + "/"));
+      if (!parent) continue;
+      group.rows.delete(REQUIRED.includes(asset) && !REQUIRED.includes(parent) ? parent : asset);
+    }
   }
   return [...groups.values()].filter((group) => REQUIRED.every((asset) => group.rows.has(asset)));
 }
@@ -286,13 +297,15 @@ async function hasRequiredAssets(id) {
 // may shrink the published archive. The local copy is the archive; the
 // indexes are only for discovery. Only entries still intact on disk are
 // carried forward, each logged with its reason.
-export async function selectCarryForward(previousVersions, keptIds, degradedNames, hasAssets = hasRequiredAssets) {
+export async function selectCarryForward(previousVersions, keptIds, degradedNames, failedDownloadIds = new Set(), hasAssets = hasRequiredAssets) {
   const carried = [];
   for (const entry of previousVersions) {
     if (entry.latest || keptIds.has(entry.id)) continue;
     const reason = degradedNames.has(sourceDependency(entry))
       ? `index source ${sourceDependency(entry)} unavailable this run`
-      : "absent from this run's index results";
+      : failedDownloadIds.has(entry.id)
+        ? "download failed this run"
+        : "absent from this run's index results";
     if (await hasAssets(entry.id)) {
       carried.push(entry);
       keptIds.add(entry.id);
@@ -344,6 +357,7 @@ async function main() {
   });
   const latestIds = new Set(latest.map((item) => item.id));
   const toArchive = unique.filter((group) => !latestIds.has(group.id));
+  const failedDownloads = new Set();
   const archived = [];
   if (toArchive.length > 0) {
     const wrapperCount = toArchive.filter((g) => g.archiveSource.includes("wrapper")).length;
@@ -360,13 +374,14 @@ async function main() {
     try {
       archived.push(await downloadVersion(group));
     } catch (error) {
+      failedDownloads.add(group.id);
       console.warn(`[${index + 1}/${toArchive.length}] unavailable for now: ${group.id} (${error.code ?? error.message})`);
     }
   });
   const keptIds = new Set([...latest, ...archived].map((version) => version.id));
-  const carriedForward = await selectCarryForward(manifest.versions, keptIds, new Set(degraded.map((item) => item.source)));
+  const carriedForward = await selectCarryForward(manifest.versions, keptIds, new Set(degraded.map((item) => item.source)), failedDownloads);
   if (carriedForward.length > 0) {
-    console.log(`  Carried forward ${carriedForward.length} previously archived build(s) not rediscovered this run.`);
+    console.log(`  Carried forward ${carriedForward.length} previously archived build(s) not refreshed this run.`);
   }
   await writeManifest([...latest, ...archived, ...carriedForward]);
   console.log(`Archive ready: ${latest.length + archived.length + carriedForward.length} playable builds.`);
